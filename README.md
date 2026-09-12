@@ -36,7 +36,6 @@ The main objectives of this project were to:
 | **AWS KMS**        | Encryption key creation and key management |
 | **Amazon S3**      | Storage of the encrypted object            |
 | **AWS CloudTrail** | API activity monitoring and auditing       |
-| **IAM**            | Identity and permission management         |
 
 ---
 
@@ -47,6 +46,9 @@ Create KMS Key
       │
       ▼
 Configure Key User
+      │
+      ▼
+Configure CloudTrail Trail
       │
       ▼
 Upload Object to S3
@@ -305,7 +307,6 @@ KMS allows key administrators and key users to be managed separately, providing 
 * AWS Key Management Service (KMS)
 * Amazon S3
 * AWS CloudTrail
-* AWS IAM
 
 ### Cloud Security
 
@@ -366,9 +367,9 @@ AWS-KMS-S3-Encryption-CloudTrail-Lab/
 
 Successfully completed a hands-on AWS security workflow covering:
 
-**KMS Key Creation → S3 Encryption → Access Testing → Block Public Access Analysis → SSE-KMS Access Analysis → CloudTrail Monitoring → Log Analysis → KMS User Management**
+**KMS Key Creation → CloudTrail Configuration → S3 Encryption → Access Testing → Block Public Access Analysis → SSE-KMS Access Analysis → CloudTrail Monitoring → Log Analysis → KMS User Management**
 
-The project demonstrates practical understanding of how **KMS, S3, CloudTrail, and IAM** work together to protect, control, and audit encrypted data in AWS.
+The project demonstrates practical understanding of how **KMS, S3, and CloudTrail** work together to protect, control, and audit encrypted data in AWS.
 
 ---
 
