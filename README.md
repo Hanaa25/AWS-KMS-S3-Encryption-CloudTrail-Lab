@@ -20,7 +20,7 @@ The main objectives of this project were to:
 * Configure KMS key administrators and key users.
 * Encrypt an S3 object using **SSE-KMS**.
 * Test access to an encrypted S3 object.
-* Investigate an **Access Denied** scenario.
+* Investigate different **Access Denied** scenarios.
 * Configure an AWS CloudTrail trail.
 * Analyze CloudTrail logs related to the encrypted object.
 * Identify the KMS Key ID from CloudTrail events.
@@ -55,10 +55,25 @@ Upload Object to S3
 Encrypt Object with SSE-KMS
       │
       ▼
-Test Object Access
+First Access Attempt
       │
       ▼
-Investigate Access Behavior
+Access Denied – Block Public Access
+      │
+      ▼
+Disable Block Public Access
+      │
+      ▼
+Configure Object Ownership
+      │
+      ▼
+Make Object Public
+      │
+      ▼
+Second Access Attempt
+      │
+      ▼
+Access Denied – SSE-KMS
       │
       ▼
 Monitor Activity with CloudTrail
@@ -120,7 +135,7 @@ The customer-managed key `myFirstKey` was selected for encryption.
 
 ## 4. Access the Encrypted Object
 
-The encrypted image was opened through the Amazon S3 console to verify access to the protected object.
+The encrypted image was opened through the Amazon S3 console as part of the access test.
 
 ### Evidence
 
@@ -128,27 +143,29 @@ The encrypted image was opened through the Amazon S3 console to verify access to
 
 ---
 
-## 5. Investigate Access Denied
+## 5. First Access Attempt – Access Denied
 
-An **Access Denied** response was encountered during the access test.
+The first access attempt resulted in **Access Denied** because **S3 Block Public Access** was still enabled.
 
-This provided a practical demonstration that access to encrypted S3 data can involve multiple layers of authorization, including S3 and KMS permissions.
+This demonstrated that the S3 public-access restriction prevented the object from being accessed publicly.
 
 ### Evidence
 
-![Access Denied](screenshots/04-Access%20Denied.png)
+![Access Denied - Block Public Access](screenshots/04-Access%20Denied.png)
 
 ---
 
-## 6. Review S3 Block Public Access
+## 6. Disable S3 Block Public Access
 
-As part of the lab experiment, the S3 **Block Public Access** configuration was modified to investigate object access behavior.
+To continue the access-control experiment, the **Block Public Access** setting was disabled.
+
+This allowed the lab to proceed to the next stage and test whether removing the S3 public-access restriction would provide access to the encrypted object.
 
 ### Evidence
 
-![Deselect Block Public Access](screenshots/05-Deselect%20block%20public%20access.png)
+![Disable Block Public Access](screenshots/05-Deselect%20block%20public%20access.png)
 
-> **Note:** This configuration change was performed for educational testing and is not intended as a production security recommendation.
+> **Note:** This configuration change was performed only for educational testing and is not intended as a production security recommendation.
 
 ---
 
@@ -162,11 +179,11 @@ The S3 **Object Ownership** configuration was modified as required for the acces
 
 ---
 
-## 8. Test Public Object Access
+## 8. Make the S3 Object Public
 
 The S3 object was configured for public access as part of the experiment.
 
-The purpose was to examine whether S3-level public access would be sufficient to retrieve an object protected by SSE-KMS.
+The purpose was to determine whether S3-level public access would be sufficient to retrieve an object protected with SSE-KMS.
 
 ### Evidence
 
@@ -174,15 +191,17 @@ The purpose was to examine whether S3-level public access would be sufficient to
 
 ---
 
-## 9. Verify SSE-KMS Access Behavior
+## 9. Second Access Attempt – SSE-KMS Encryption
 
-The server-side encryption configuration was reviewed to verify the use of the customer-managed KMS key.
+After disabling **Block Public Access** and configuring the S3 object for public access, the object was still not accessible.
 
-This experiment demonstrated an important security concept:
+The second **Access Denied** result demonstrated that the object's **SSE-KMS encryption** introduced an additional authorization requirement.
 
-> **S3 access permissions and KMS authorization are separate layers of control.**
+Because the object was encrypted using the customer-managed KMS key, S3 public access alone was not sufficient to retrieve the encrypted data.
 
-Changing S3 access settings does not remove the authorization requirements associated with the KMS key.
+### Key Finding
+
+> **S3 public access does not bypass KMS authorization requirements for SSE-KMS encrypted objects.**
 
 ### Evidence
 
@@ -250,25 +269,32 @@ This demonstrated the practical management of identities authorized to use the e
 
 # 🔐 Key Security Insights
 
-### Encryption and Authorization
+### 1. Multiple Layers of Access Control
 
-SSE-KMS provides encryption for the S3 object, while authorization to use the associated KMS key remains an additional access-control requirement.
+The lab demonstrated two different access-control barriers during the S3 access test:
 
-### S3 and KMS Permissions
+* **First Access Denied:** caused by **S3 Block Public Access**.
+* **Second Access Denied:** remained after public access was enabled because the object was protected with **SSE-KMS**.
 
-Access to an S3 object and permission to use a KMS key are separate controls. Troubleshooting encrypted-object access therefore requires considering both layers.
+This clearly demonstrates that cloud access can be controlled by multiple independent security mechanisms.
 
-### Public Access Does Not Remove KMS Controls
+### 2. S3 Permissions and KMS Authorization Are Separate
 
-The lab demonstrated that modifying S3 public-access settings does not eliminate the authorization requirements associated with KMS encryption.
+S3 permissions determine access to the S3 resource, while KMS permissions control authorized use of the encryption key.
 
-### CloudTrail Auditing
+Therefore, access to an SSE-KMS encrypted object requires consideration of both layers.
 
-CloudTrail provides visibility into AWS API activity and can be used to investigate events associated with resources and encryption operations.
+### 3. Public S3 Access Does Not Remove KMS Controls
 
-### Key User Management
+Making an S3 object publicly accessible does not automatically remove the authorization requirements associated with its KMS encryption.
 
-KMS supports controlled management of users who are authorized to use an encryption key, helping separate key administration from key usage.
+### 4. CloudTrail Provides Audit Visibility
+
+CloudTrail provides visibility into AWS API activity and can be used to investigate operations involving AWS resources and encryption-related activity.
+
+### 5. KMS Supports Controlled Key Usage
+
+KMS allows key administrators and key users to be managed separately, providing more controlled access to encryption keys.
 
 ---
 
@@ -340,7 +366,7 @@ AWS-KMS-S3-Encryption-CloudTrail-Lab/
 
 Successfully completed a hands-on AWS security workflow covering:
 
-**KMS Key Creation → S3 Encryption → Access Testing → Permission Analysis → CloudTrail Monitoring → Log Analysis → KMS User Management**
+**KMS Key Creation → S3 Encryption → Access Testing → Block Public Access Analysis → SSE-KMS Access Analysis → CloudTrail Monitoring → Log Analysis → KMS User Management**
 
 The project demonstrates practical understanding of how **KMS, S3, CloudTrail, and IAM** work together to protect, control, and audit encrypted data in AWS.
 
@@ -350,4 +376,4 @@ The project demonstrates practical understanding of how **KMS, S3, CloudTrail, a
 
 This project provided practical experience with AWS encryption and cloud security controls by combining **KMS-based encryption, S3 storage, access management, and CloudTrail auditing**.
 
-It demonstrates not only the configuration of AWS services, but also the ability to **test access behavior, investigate authorization issues, and analyze audit logs** to understand what is happening inside an AWS environment.
+The lab also demonstrated how different AWS security controls can affect the same access request, providing practical experience in **identifying access-denied causes, testing permission behavior, and analyzing CloudTrail logs**.
