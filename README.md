@@ -82,7 +82,7 @@ The previously created `myFirstKey` was selected as the KMS encryption key.
 
 ### Screenshot
 
-![Upload Encrypted Image](screenshots/03-Upload%20image%20file%20with%20encrypted%20key.png)
+![Upload encrypted image](screenshots/03-%20Upload%20image%20file%20with%20encrypted%20key.png)
 
 ---
 
