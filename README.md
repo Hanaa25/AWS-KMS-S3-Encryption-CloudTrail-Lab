@@ -1,54 +1,94 @@
-# AWS Key Management Service (KMS) – Hands-On Lab
+# AWS KMS, S3 Encryption & CloudTrail Lab
 
-## 📌 Overview
+**Keywords:** `KMS` • `CloudTrail` • `S3`
 
-This hands-on lab demonstrates how **AWS Key Management Service (AWS KMS)** can be used to create and manage encryption keys, protect objects stored in **Amazon S3**, control key usage permissions, and monitor encryption-related activity through **AWS CloudTrail**.
+## 📌 Project Overview
 
-The lab provides practical experience with **server-side encryption using AWS KMS keys (SSE-KMS)** and demonstrates how encryption, access control, object permissions, and audit logging work together within AWS.
+This hands-on AWS lab demonstrates how **AWS Key Management Service (KMS)** can be used to encrypt objects stored in **Amazon S3**, while **AWS CloudTrail** provides visibility into related API activity for monitoring and auditing.
+
+The project focuses on the practical relationship between **encryption, access control, key permissions, and audit logging** in AWS.
+
+It also includes hands-on testing of access behavior for an S3 object protected with **SSE-KMS**, followed by CloudTrail log analysis to identify the KMS key and related object activity.
 
 ---
 
 ## 🎯 Objectives
 
-By completing this lab, I gained practical experience in:
+The main objectives of this project were to:
 
-* Creating and configuring a customer managed AWS KMS key.
-* Using an AWS KMS key to encrypt an Amazon S3 object.
-* Understanding how S3 interacts with KMS during object decryption.
-* Configuring Amazon S3 public access and Object Ownership settings.
-* Understanding why SSE-KMS encrypted objects cannot simply be accessed through a public S3 URL.
-* Monitoring KMS and S3 activity using AWS CloudTrail.
-* Identifying the KMS Key ID and uploaded object name within CloudTrail logs.
-* Managing KMS key users and their permissions.
-
----
-
-## 🛠️ AWS Services Used
-
-| Service            | Purpose                               |
-| ------------------ | ------------------------------------- |
-| **AWS KMS**        | Create and manage the encryption key  |
-| **Amazon S3**      | Store and encrypt the uploaded object |
-| **AWS CloudTrail** | Record and monitor API activity       |
-| **IAM**            | Control access to the KMS key         |
+* Create a customer-managed symmetric KMS key.
+* Configure KMS key administrators and key users.
+* Encrypt an S3 object using **SSE-KMS**.
+* Test access to an encrypted S3 object.
+* Investigate an **Access Denied** scenario.
+* Configure an AWS CloudTrail trail.
+* Analyze CloudTrail logs related to the encrypted object.
+* Identify the KMS Key ID from CloudTrail events.
+* Identify the S3 object involved in the recorded activity.
+* Practice adding and removing a KMS key user.
 
 ---
 
-# 🔐 Lab Implementation
+## ☁️ AWS Services
 
-## 1. Create a Customer Managed KMS Key
+| Service            | Purpose                                    |
+| ------------------ | ------------------------------------------ |
+| **AWS KMS**        | Encryption key creation and key management |
+| **Amazon S3**      | Storage of the encrypted object            |
+| **AWS CloudTrail** | API activity monitoring and auditing       |
+| **IAM**            | Identity and permission management         |
 
-A symmetric customer managed KMS key was created with the following configuration:
+---
 
-* **Key type:** Symmetric
+## 🔄 Project Workflow
+
+```text
+Create KMS Key
+      │
+      ▼
+Configure Key User
+      │
+      ▼
+Upload Object to S3
+      │
+      ▼
+Encrypt Object with SSE-KMS
+      │
+      ▼
+Test Object Access
+      │
+      ▼
+Investigate Access Behavior
+      │
+      ▼
+Monitor Activity with CloudTrail
+      │
+      ▼
+Analyze CloudTrail Logs
+      │
+      ▼
+Manage KMS Key Users
+```
+
+---
+
+# 🧪 Implementation
+
+## 1. Create the KMS Key
+
+A **symmetric customer-managed KMS key** was created through the AWS Management Console.
+
+### Configuration
+
+* **Key Type:** Symmetric
 * **Alias:** `myFirstKey`
-* **Purpose:** Encryption of S3 data
-* **Key administrators:** Lab IAM user
-* **Key users:** Lab IAM user
+* **Description:** KMS Key for S3 data
+* **Key Administrator:** Lab IAM user
+* **Key User:** Lab IAM user
 
-The Key ID was also recorded for later verification in CloudTrail logs.
+The generated **Key ID** was recorded for later verification through CloudTrail.
 
-### Screenshot
+### Evidence
 
 ![Create KMS Key](screenshots/01-Create%20key.png)
 
@@ -56,195 +96,229 @@ The Key ID was also recorded for later verification in CloudTrail logs.
 
 ## 2. Configure CloudTrail
 
-A CloudTrail trail was configured to store AWS activity logs in an Amazon S3 bucket.
+An AWS CloudTrail trail named `myTrail` was configured to record AWS activity.
 
-The configuration included monitoring:
+The configuration included relevant management and data events, together with CloudTrail Insights monitoring.
 
-* Management events
-* Data events
-* Insights events
-* API call rate
-* API error rate
+### Evidence
 
-### Screenshot
-
-![Create CloudTrail Trail](screenshots/02-Create%20trail.png)
+![Create CloudTrail](screenshots/02-Create%20trail.png)
 
 ---
 
 ## 3. Upload and Encrypt an S3 Object
 
-An image file was uploaded to the S3 bucket and encrypted using:
+An image was uploaded to Amazon S3 and protected using **Server-Side Encryption with AWS KMS (SSE-KMS)**.
 
-**Server-side encryption with AWS Key Management Service keys (SSE-KMS)**
+The customer-managed key `myFirstKey` was selected for encryption.
 
-The previously created `myFirstKey` was selected as the KMS encryption key.
+### Evidence
 
-### Screenshot
-
-![Upload encrypted image](screenshots/03-%20Upload%20image%20file%20with%20encrypted%20key.png)
+![Upload Encrypted Image](screenshots/03-%20Upload%20image%20file%20with%20encrypted%20key.png)
 
 ---
 
 ## 4. Access the Encrypted Object
 
-The encrypted image was successfully opened through the AWS Management Console.
+The encrypted image was opened through the Amazon S3 console to verify access to the protected object.
 
-This demonstrates that authorized access allows Amazon S3 to interact with AWS KMS to decrypt the object.
-
-### Screenshot
+### Evidence
 
 ![Open Encrypted Image](screenshots/03-Open%20image%20from%20consol.png)
 
 ---
 
-## 5. Test Direct S3 URL Access
+## 5. Investigate Access Denied
 
-The S3 object URL was accessed directly through a browser.
+An **Access Denied** response was encountered during the access test.
 
-Initially, access was denied because public access was blocked.
+This provided a practical demonstration that access to encrypted S3 data can involve multiple layers of authorization, including S3 and KMS permissions.
 
-### Screenshot
+### Evidence
 
 ![Access Denied](screenshots/04-Access%20Denied.png)
 
 ---
 
-## 6. Configure S3 Public Access and Object Ownership
+## 6. Review S3 Block Public Access
 
-To demonstrate S3 access behavior, the bucket configuration was modified by:
+As part of the lab experiment, the S3 **Block Public Access** configuration was modified to investigate object access behavior.
 
-* Disabling Block Public Access.
-* Enabling ACLs.
-* Updating Object Ownership settings.
-
-### Screenshots
+### Evidence
 
 ![Deselect Block Public Access](screenshots/05-Deselect%20block%20public%20access.png)
+
+> **Note:** This configuration change was performed for educational testing and is not intended as a production security recommendation.
+
+---
+
+## 7. Configure Object Ownership
+
+The S3 **Object Ownership** configuration was modified as required for the access-control experiment.
+
+### Evidence
 
 ![Object Ownership](screenshots/06-Successfully%20edited%20Object%20Ownership..png)
 
 ---
 
-## 7. Make the Object Public
+## 8. Test Public Object Access
 
-The uploaded image was made public using an S3 ACL.
+The S3 object was configured for public access as part of the experiment.
 
-### Screenshot
+The purpose was to examine whether S3-level public access would be sufficient to retrieve an object protected by SSE-KMS.
+
+### Evidence
 
 ![Make Public Object](screenshots/07-Make%20public%20object.png)
 
-However, because the object uses **SSE-KMS encryption**, accessing it through a public URL still requires authenticated requests using **AWS Signature Version 4**.
+---
 
-This demonstrates an important distinction between:
+## 9. Verify SSE-KMS Access Behavior
 
-**S3 object permissions**
-and
-**KMS encryption permissions**
+The server-side encryption configuration was reviewed to verify the use of the customer-managed KMS key.
 
-Making an object publicly accessible does not bypass the encryption requirements imposed by SSE-KMS.
+This experiment demonstrated an important security concept:
+
+> **S3 access permissions and KMS authorization are separate layers of control.**
+
+Changing S3 access settings does not remove the authorization requirements associated with the KMS key.
+
+### Evidence
+
+![Server Side Encryption](screenshots/08-%20Request%20specific%20server%20side%20Encryption.png)
 
 ---
 
-## 8. Verify Server-Side Encryption
+# 🔍 CloudTrail Monitoring & Log Analysis
 
-The object access behavior was examined to understand the requirement for authenticated requests when accessing SSE-KMS encrypted objects.
+## 10. Examine CloudTrail Logs
 
-### Screenshot
+CloudTrail logs were reviewed to investigate API activity associated with the encrypted S3 object.
 
-![Server Side Encryption Request](screenshots/08-%20Request%20specific%20server%20side%20Encryption.png)
+The recorded events provided visibility into AWS operations and supported the analysis of the encryption workflow.
 
----
+### Evidence
 
-# 📊 9. Monitor KMS Activity Using CloudTrail
-
-CloudTrail logs stored in the S3 bucket were examined to identify activity associated with the encryption operation.
-
-The relevant log file was opened and inspected in JSON format.
-
-### Screenshot
-
-![CloudTrail Log File](screenshots/09-Log%20file.png)
+![CloudTrail Log](screenshots/09-Log%20file.png)
 
 ---
 
-## 🔎 10. Identify the KMS Key ID in the Log
+## 11. Identify the KMS Key ID
 
-The KMS Key ID created earlier was located within the CloudTrail log.
+The CloudTrail JSON event was examined to identify the **KMS Key ID** associated with the encryption activity.
 
-### Screenshot
+### Evidence
 
-![KMS Key ID in CloudTrail](screenshots/11-Open%20log%20file%20contain%20keyID.png)
-
----
-
-## 🔎 11. Identify the Uploaded Object
-
-The name of the uploaded image was also located within the same CloudTrail log.
-
-This demonstrates how CloudTrail can be used to correlate AWS API activity with specific resources and encryption operations.
-
-### Screenshot
-
-![Image Name in CloudTrail](screenshots/12-Open%20log%20file%20contain%20image%20name.png)
+![KMS Key ID](screenshots/11-Open%20log%20file%20contain%20keyID.png)
 
 ---
 
-# 👤 12. Manage KMS Key Users
+## 12. Identify the S3 Object
 
-The KMS key permissions were modified to demonstrate how access to a customer managed key can be controlled.
+The CloudTrail event was further examined to identify the image/object associated with the recorded activity.
 
-First, the current IAM user was removed from the **Key Users** list.
+### Evidence
 
-### Screenshot
+![S3 Object Name](screenshots/12-Open%20log%20file%20contain%20image%20name.png)
+
+---
+
+# 👤 KMS Key User Management
+
+## 13. Remove the KMS Key User
+
+The configured KMS key user was removed to demonstrate practical key-user permission management.
+
+### Evidence
 
 ![Remove Key User](screenshots/13-Remove%20key%20user.png)
 
-The user was then added again to restore permission to use the key.
+---
 
-### Screenshot
+## 14. Add the KMS Key User
+
+The user was subsequently added again as a KMS key user.
+
+This demonstrated the practical management of identities authorized to use the encryption key.
+
+### Evidence
 
 ![Add Key User](screenshots/14-%20Add%20key%20user.png)
 
-This demonstrates that KMS provides granular control over which IAM users or roles can use a key for encryption and decryption operations.
+---
+
+# 🔐 Key Security Insights
+
+### Encryption and Authorization
+
+SSE-KMS provides encryption for the S3 object, while authorization to use the associated KMS key remains an additional access-control requirement.
+
+### S3 and KMS Permissions
+
+Access to an S3 object and permission to use a KMS key are separate controls. Troubleshooting encrypted-object access therefore requires considering both layers.
+
+### Public Access Does Not Remove KMS Controls
+
+The lab demonstrated that modifying S3 public-access settings does not eliminate the authorization requirements associated with KMS encryption.
+
+### CloudTrail Auditing
+
+CloudTrail provides visibility into AWS API activity and can be used to investigate events associated with resources and encryption operations.
+
+### Key User Management
+
+KMS supports controlled management of users who are authorized to use an encryption key, helping separate key administration from key usage.
 
 ---
 
-# 🧠 Key Takeaways
+# 🧠 Skills Demonstrated
 
-This lab provided practical understanding of the relationship between **Amazon S3, AWS KMS, IAM, and CloudTrail**.
+### AWS Cloud
 
-### Encryption
+* AWS Key Management Service (KMS)
+* Amazon S3
+* AWS CloudTrail
+* AWS IAM
 
-AWS KMS can provide centralized management of encryption keys used to protect data stored in AWS services.
+### Cloud Security
 
-### Access Control
+* Data encryption at rest
+* SSE-KMS
+* Access control
+* KMS key management
+* Audit logging
 
-Access to an encrypted S3 object depends on more than the S3 object permissions. The principal also needs the appropriate permissions to use the KMS key.
+### Practical Technical Skills
 
-### Auditing
+* AWS Management Console
+* AWS resource configuration
+* Permission troubleshooting
+* CloudTrail JSON log analysis
+* Encryption configuration
+* KMS user management
 
-AWS CloudTrail provides visibility into API activity and can be used to investigate encryption-related operations.
+---
 
-### SSE-KMS
+# ⚠️ Security Considerations
 
-Server-side encryption with AWS KMS keys provides an additional layer of protection and requires authenticated access when interacting with encrypted objects.
+Some S3 access settings were intentionally modified during this lab to demonstrate access-control behavior.
 
-### Key Management
+These changes were performed strictly for **hands-on learning and testing**.
 
-KMS key administrators and key users can be managed independently, allowing more granular control over encryption key usage.
+For production environments, access to sensitive S3 data should be carefully controlled, KMS permissions should follow the **principle of least privilege**, and public access should only be enabled when explicitly required.
 
 ---
 
 # 📁 Repository Structure
 
 ```text
-AWS-KMS-Lab/
+AWS-KMS-S3-Encryption-CloudTrail-Lab/
 │
 ├── screenshots/
 │   ├── 01-Create key.png
 │   ├── 02-Create trail.png
-│   ├── 03-Upload image file with encrypted key.png
+│   ├── 03- Upload image file with encrypted key.png
 │   ├── 03-Open image from consol.png
 │   ├── 04-Access Denied.png
 │   ├── 05-Deselect block public access.png
@@ -262,25 +336,18 @@ AWS-KMS-Lab/
 
 ---
 
-# ✅ Skills Demonstrated
+# ✅ Project Outcome
 
-* AWS Key Management Service (KMS)
-* Symmetric Customer Managed Keys
-* Amazon S3 Server-Side Encryption
-* SSE-KMS
-* S3 Object Permissions
-* S3 Block Public Access
-* S3 Object Ownership and ACLs
-* AWS CloudTrail
-* IAM Permissions
-* Encryption Key Management
-* CloudTrail Log Analysis
-* AWS Security Best Practices
+Successfully completed a hands-on AWS security workflow covering:
+
+**KMS Key Creation → S3 Encryption → Access Testing → Permission Analysis → CloudTrail Monitoring → Log Analysis → KMS User Management**
+
+The project demonstrates practical understanding of how **KMS, S3, CloudTrail, and IAM** work together to protect, control, and audit encrypted data in AWS.
 
 ---
 
-## 📌 Lab Summary
+## 📌 Conclusion
 
-This project demonstrates a complete practical workflow for **encrypting an Amazon S3 object with AWS KMS, controlling access to the encryption key, examining S3 access behavior, and auditing related activity using CloudTrail**.
+This project provided practical experience with AWS encryption and cloud security controls by combining **KMS-based encryption, S3 storage, access management, and CloudTrail auditing**.
 
-The screenshots included in this repository provide visual evidence of the major configuration and verification steps performed during the lab.
+It demonstrates not only the configuration of AWS services, but also the ability to **test access behavior, investigate authorization issues, and analyze audit logs** to understand what is happening inside an AWS environment.
